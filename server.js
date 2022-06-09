@@ -21,6 +21,10 @@ MongoClient.connect(connectionString, { useUnifiedTopology: true }) // new synta
 
 
     app.use(bodyParser.urlencoded({extended: true})) //middle ware to help tidy up request object (old way )
+    app.use(express.static('public'))
+    app.use(bodyParser.json())
+
+
     app.get('/', (req, res) => {
         quotesCollection.find().toArray()
           .then(results=>{
@@ -39,6 +43,37 @@ MongoClient.connect(connectionString, { useUnifiedTopology: true }) // new synta
             })
             .catch(error =>console.error(error))
     })
+    app.put('/quotes', (req, res) => {
+        quotesCollection.findOneAndUpdate(
+            {name: 'Yoda'},
+            {
+                $set: {
+                    name: req.body.name,
+                    quote: req.body.quote
+                }
+            },
+            {
+                upsert: true
+            }
+        )
+        .then(result=>{
+            res.json('Success')
+        })
+        .catch(error => console.error(error))
+      })
+
+      app.delete('/quotes', (req, res) => {
+        // Handle delete event here
+        quotesCollection.deleteOne(
+            { name: req.body.name }
+          )
+            .then(result => {
+              res.json(`Deleted Darth Vadar's quote`)
+            })
+            .catch(error => console.error(error))
+        })
+    
+  
     app.listen(PORT,function(){ // callback (old way of doing it)
         console.log('listening on port 3000')
     })
